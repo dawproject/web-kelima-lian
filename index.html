@@ -1,0 +1,1542 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f8d9df">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>psst... 💌</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Cormorant+Garamond:ital,wght@0,600;0,700;1,500;1,600&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* ================================================================
+   BASE
+================================================================ */
+:root{
+  --blush:#f8d9df; --dusty:#d99aa9; --rose:#c0617a; --deep:#8f3550;
+  --cream:#fff1e0; --ivory:#fffaf4; --ink:#4b2a36;
+  --serif:'Cormorant Garamond',Georgia,'Times New Roman',serif;
+  --hand:'Caveat','Bradley Hand','Segoe Print','Comic Sans MS',cursive;
+  --sans:'Nunito',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --shadow:0 12px 32px rgba(120,45,70,.2);
+  --top:calc(env(safe-area-inset-top,0px) + 66px);
+  --bot:calc(env(safe-area-inset-bottom,0px) + 26px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{
+  position:fixed;inset:0;overflow:hidden;
+  font-family:var(--sans);color:var(--ink);background:var(--ivory);
+  transition:color .9s ease;-webkit-font-smoothing:antialiased;touch-action:manipulation;
+  -webkit-text-size-adjust:100%;
+}
+button{font-family:inherit}
+.hand{font-family:var(--hand)}
+.serif{font-family:var(--serif);font-style:italic}
+
+.bg{position:fixed;inset:0;z-index:0;opacity:0;will-change:opacity,clip-path}
+#bgA{z-index:1}
+#fx{position:fixed;inset:0;z-index:1;pointer-events:none}
+.grain{
+  position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.09;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+}
+
+/* ================================================================
+   UI (progress, back, music)
+================================================================ */
+#ui{position:fixed;inset:0;z-index:10;pointer-events:none;color:inherit}
+#progress{
+  position:absolute;top:calc(env(safe-area-inset-top,0px) + 10px);left:16px;right:16px;
+  display:flex;gap:4px;
+}
+#progress i{flex:1;height:3px;border-radius:3px;background:currentColor;opacity:.16;transition:opacity .6s ease}
+#progress i.on{opacity:.7}
+.icon-btn{
+  pointer-events:auto;width:36px;height:36px;border-radius:50%;border:0;padding:0;
+  background:rgba(255,255,255,.3);color:inherit;display:grid;place-items:center;font-size:22px;line-height:1;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);cursor:pointer;
+  box-shadow:0 4px 12px rgba(80,30,45,.12);transition:transform .15s ease,opacity .5s ease;
+}
+.icon-btn:active{transform:scale(.9)}
+#back{position:absolute;top:calc(env(safe-area-inset-top,0px) + 22px);left:14px;opacity:0;pointer-events:none}
+#back.show{opacity:1;pointer-events:auto}
+#music{position:absolute;top:calc(env(safe-area-inset-top,0px) + 22px);right:14px;display:flex;gap:8px;align-items:center}
+.pill{
+  pointer-events:auto;border:0;border-radius:999px;padding:0 14px;height:36px;font-weight:800;font-size:13.5px;color:inherit;
+  background:rgba(255,255,255,.3);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  box-shadow:0 4px 12px rgba(80,30,45,.12);cursor:pointer;position:relative;overflow:hidden;transition:transform .15s ease;
+}
+.pill:active{transform:scale(.94)}
+.pill.pulse{animation:pulseRing 2.4s ease-in-out infinite}
+#mMute{display:none}
+#mMute.show{display:grid}
+#mMute svg{width:18px;height:18px}
+
+/* ================================================================
+   PAGES
+================================================================ */
+#app{position:fixed;inset:0;z-index:2}
+.page{
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+  overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
+  padding:var(--top) 20px var(--bot);
+  opacity:0;visibility:hidden;pointer-events:none;transform:translateY(16px) scale(.985);
+  transition:opacity .6s ease,transform .7s cubic-bezier(.2,.8,.2,1),visibility 0s .7s;
+}
+.page.active{
+  opacity:1;visibility:visible;pointer-events:auto;transform:none;
+  transition:opacity .7s ease .05s,transform .8s cubic-bezier(.2,.8,.2,1) .05s,visibility 0s;
+}
+.page.out{
+  visibility:visible;opacity:0;transform:translateY(-12px) scale(1.01);
+  transition:opacity .45s ease,transform .5s ease,visibility 0s .5s;
+}
+.inner{position:relative;z-index:1;margin:auto;width:100%;max-width:440px;display:flex;flex-direction:column;align-items:center;text-align:center}
+.decor{position:fixed;z-index:0;pointer-events:none;opacity:.85}
+.decor svg{display:block;width:100%;height:auto;animation:sway 7s ease-in-out infinite alternate}
+
+.tag{
+  display:inline-block;font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;
+  padding:5px 12px;border-radius:999px;background:rgba(255,255,255,.7);color:var(--deep);
+}
+h2{font-family:var(--serif);font-style:italic;font-weight:700;font-size:clamp(30px,8.5vw,40px);margin:12px 0 6px;line-height:1.05}
+.hint{font-size:14px;opacity:.7;font-weight:700}
+.hidden{opacity:0!important;pointer-events:none!important;transform:translateY(10px)!important}
+.fx{opacity:0;transform:translateY(14px);transition:opacity .8s ease,transform .8s ease}
+.fx.in{opacity:1;transform:none}
+.caret::after{content:"";display:inline-block;width:2px;height:1em;margin-left:3px;background:currentColor;vertical-align:-.12em;animation:blink 1s steps(2) infinite}
+.tip{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);text-align:center;font-size:12.5px;opacity:.55;transition:opacity .6s;pointer-events:none;z-index:2}
+.tip.off{opacity:0}
+
+/* ---------- buttons ---------- */
+.btn{
+  font-weight:800;font-size:16px;border:0;border-radius:999px;padding:14px 26px;color:#fff;cursor:pointer;
+  background:linear-gradient(135deg,var(--rose),var(--deep));
+  box-shadow:0 8px 20px rgba(143,53,80,.35),inset 0 1px 0 rgba(255,255,255,.35);
+  position:relative;overflow:hidden;-webkit-user-select:none;user-select:none;
+  transition:transform .18s cubic-bezier(.3,1.6,.5,1),box-shadow .18s ease,opacity .7s ease;
+}
+.btn:active{transform:scale(.94)}
+.btn.soft{background:rgba(255,255,255,.78);color:var(--deep);box-shadow:0 8px 20px rgba(143,53,80,.2),inset 0 1px 0 #fff}
+.btn.ghost{background:transparent;color:inherit;box-shadow:none;border:1.5px solid currentColor;padding:10px 20px;font-size:14px;opacity:.8}
+.next{margin-top:22px}
+.ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.5);transform:scale(0);animation:rip .65s ease-out forwards;pointer-events:none}
+.shake{animation:shake .45s ease}
+.nudge{animation:nudge .45s ease}
+
+/* ---------- PAGE 0 ---------- */
+#p0 .big{font-family:var(--serif);font-style:italic;font-weight:600;font-size:clamp(50px,17vw,78px);min-height:1.2em;line-height:1.1}
+#p0 .sub{font-size:19px;font-weight:700;min-height:1.8em;margin-top:6px;opacity:.85}
+#openBtn{margin-top:34px}
+
+/* ---------- PAGE 1 ---------- */
+#p1 h1{margin:0 0 14px;font-weight:900;line-height:.92;font-size:clamp(52px,17.5vw,86px);letter-spacing:-.02em;color:#fff;
+  text-shadow:0 3px 0 var(--deep),0 6px 0 rgba(143,53,80,.5),0 16px 24px rgba(143,53,80,.35)}
+#p1 .w{display:block;opacity:0;rotate:var(--r,0deg);transform:translateY(-44px) scale(1.12);transition:opacity .5s ease,transform .7s cubic-bezier(.2,1.4,.4,1)}
+#p1 .w.in{opacity:1;transform:none}
+#p1 .hand{font-size:32px;min-height:1.4em;margin-bottom:18px}
+
+/* ---------- PAGE 2 (quiz) ---------- */
+.glass{
+  width:100%;background:rgba(255,255,255,.68);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.85);border-radius:28px;padding:22px 18px 20px;box-shadow:var(--shadow);color:var(--ink);
+}
+.qprog{display:flex;gap:6px;justify-content:center;margin:12px 0 16px}
+.qprog i{width:26px;height:6px;border-radius:6px;background:rgba(217,154,169,.4);transition:background .4s}
+.qprog i.on{background:var(--rose)}
+.q{font-weight:800;font-size:19px;line-height:1.3;text-align:left}
+.opts{margin-top:6px}
+.opt{
+  display:block;width:100%;text-align:left;font-weight:700;font-size:16px;line-height:1.3;padding:14px 16px;border-radius:16px;
+  border:2px solid rgba(217,154,169,.55);background:#fff;color:var(--ink);margin-top:10px;position:relative;overflow:hidden;cursor:pointer;
+  transition:transform .15s ease,background .25s ease,border-color .25s ease;
+}
+.opt:active{transform:scale(.98)}
+.opt.good,.opt.right{background:#ffe0e8;border-color:var(--rose)}
+.opt.meh{animation:shake .4s ease}
+.opts.lock .opt{pointer-events:none}
+.react{min-height:1.5em;margin-top:14px;font-family:var(--hand);font-size:26px;color:var(--deep);text-align:center}
+.result .big{font-family:var(--serif);font-style:italic;font-weight:700;font-size:clamp(30px,8.6vw,38px);line-height:1.12;margin:6px 0 10px}
+.chip{display:inline-block;font-weight:800;font-size:13px;padding:5px 12px;border-radius:999px;background:var(--blush);color:var(--deep)}
+.result .after{font-family:var(--hand);font-size:28px;margin-top:16px;min-height:1.4em;color:var(--deep)}
+
+/* ---------- PAGE 3 (cards) ---------- */
+.cards{width:100%;display:grid;gap:14px;margin-top:10px}
+.fc{perspective:900px;cursor:pointer;rotate:var(--rot,0deg)}
+.fci{display:grid;transform-style:preserve-3d;-webkit-transform-style:preserve-3d;transition:transform .75s cubic-bezier(.3,1.2,.4,1)}
+.fc.flipped .fci{transform:rotateY(180deg)}
+.face{
+  grid-area:1/1;-webkit-backface-visibility:hidden;backface-visibility:hidden;border-radius:22px;padding:18px 18px 16px;min-height:104px;
+  display:flex;flex-direction:column;justify-content:center;box-shadow:var(--shadow);text-align:left;position:relative;color:var(--ink);
+}
+.front{background:#fff}
+.fc:nth-child(4n+2) .front{background:#ffeef2}
+.fc:nth-child(4n+3) .front{background:#fff6e6}
+.fc:nth-child(4n+4) .front{background:#fbe4ea}
+.front p{margin:0;font-weight:800;font-size:18px;line-height:1.3;white-space:pre-line;padding-right:26px}
+.front .no{position:absolute;top:10px;right:14px;font-family:var(--hand);font-size:22px;color:var(--rose);opacity:.8}
+.front .tapme{position:absolute;bottom:8px;right:14px;font-size:11.5px;font-weight:800;opacity:.45}
+.back{transform:rotateY(180deg);background:linear-gradient(135deg,var(--rose),var(--deep));color:#fff}
+.back p{margin:0;font-family:var(--hand);font-size:25px;line-height:1.25;white-space:pre-line}
+.counter{margin-top:14px;font-weight:800;font-size:13px;opacity:.65}
+
+/* ---------- PAGE 4 (chat) ---------- */
+.chatwrap{
+  width:100%;max-width:420px;margin:auto;height:calc(100vh - var(--top) - var(--bot));height:calc(100dvh - var(--top) - var(--bot));max-height:660px;
+  display:flex;flex-direction:column;border-radius:28px;overflow:hidden;background:#fff8f2;color:var(--ink);text-align:left;
+  box-shadow:var(--shadow),0 0 0 6px rgba(255,255,255,.55);
+}
+.chead{display:flex;align-items:center;gap:10px;padding:12px 14px;background:linear-gradient(135deg,#f6bfcc,#ee9db3);color:#fff}
+.chead b{display:block;font-size:16px}
+.chead small{display:block;opacity:.92;font-size:12px;font-weight:600}
+.av{width:38px;height:38px;border-radius:50%;background:#fff;color:var(--rose);display:grid;place-items:center;font-weight:900;font-size:18px}
+.msgs{
+  flex:1;overflow-y:auto;padding:14px 12px;display:flex;flex-direction:column;gap:7px;scroll-behavior:smooth;
+  background:radial-gradient(circle at 1px 1px,rgba(217,154,169,.25) 1.2px,transparent 0) 0 0/18px 18px,#fff4ec;
+}
+.daychip{align-self:center;font-size:11.5px;font-weight:700;background:rgba(255,255,255,.85);padding:3px 11px;border-radius:999px;opacity:.85;margin-bottom:4px}
+.b{max-width:80%;padding:9px 13px 6px;border-radius:18px;font-size:15.5px;line-height:1.35;animation:pop .35s cubic-bezier(.2,1.4,.4,1);word-wrap:break-word}
+.b small{display:block;font-size:10.5px;opacity:.6;text-align:right;margin-top:2px}
+.b.me{align-self:flex-end;background:linear-gradient(135deg,#f3a5b8,#e07f9b);color:#fff;border-bottom-right-radius:6px}
+.b.her{align-self:flex-start;background:#fff;border-bottom-left-radius:6px;box-shadow:0 2px 6px rgba(120,45,70,.08)}
+.b.typing{display:flex;gap:4px;padding:12px 14px}
+.b.typing i{width:7px;height:7px;border-radius:50%;background:#c9a0ab;animation:bounce 1s ease-in-out infinite}
+.b.typing.me i{background:#fff}
+.b.typing i:nth-child(2){animation-delay:.15s}
+.b.typing i:nth-child(3){animation-delay:.3s}
+.dock{max-height:0;overflow:hidden;padding:0 12px;background:#fff;transition:max-height .7s ease,padding .7s ease}
+.dock.show{max-height:320px;padding:12px}
+.dlabel{font-weight:800;font-size:14px;margin-bottom:8px;text-align:center;opacity:.8}
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cbtn{
+  border:2px solid rgba(217,154,169,.6);background:#fff7f9;color:var(--deep);font-weight:800;font-size:14.5px;line-height:1.2;
+  padding:11px 8px;border-radius:14px;cursor:pointer;position:relative;overflow:hidden;transition:transform .15s,background .3s;
+}
+.cbtn:active{transform:scale(.96)}
+.cbtn.picked{background:#ffe0e8}
+.cbtn:disabled{opacity:.55;pointer-events:none}
+.dock .next{width:100%;margin-top:10px}
+
+/* ---------- STAGE LINES (5, 9, 10) ---------- */
+.stage{width:100%;min-height:240px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ln{opacity:0;transform:translateY(10px);transition:opacity 1.3s ease,transform 1.3s ease;white-space:pre-line;font-family:var(--serif);font-style:italic;font-weight:600;line-height:1.28;margin:8px 0}
+.ln.in{opacity:1;transform:none}
+.ln.gone{opacity:0;transform:translateY(-8px);transition:opacity .6s ease,transform .6s ease}
+
+/* PAGE 5 */
+#p5 .ln{font-size:clamp(24px,6.8vw,31px)}
+#p5 .ln.lead{font-size:clamp(34px,10vw,46px)}
+#p5 .stage::before{content:"";position:absolute;inset:-30px -40px;background:radial-gradient(closest-side,rgba(255,170,190,.14),transparent);animation:breathe 6s ease-in-out infinite;pointer-events:none}
+#p5 .stage{position:relative}
+
+/* PAGE 6 */
+#l1{font-size:32px;min-height:1.4em}
+.env{
+  position:relative;width:min(300px,82vw);aspect-ratio:3/2;margin:26px auto 8px;cursor:pointer;
+  filter:drop-shadow(0 18px 22px rgba(0,0,0,.3));transition:transform .7s ease,opacity .7s ease;outline:none;
+}
+.env>div{position:absolute;inset:0;border-radius:10px}
+.eb{background:#e8a9b8}
+.el{
+  background:#fffaf0;inset:6% 7% 10% 7%!important;border-radius:6px!important;z-index:2;display:flex;align-items:flex-start;justify-content:center;padding-top:14px;
+  font-family:var(--hand);font-size:26px;color:#8a4a5b;transition:transform .9s cubic-bezier(.3,.8,.3,1);
+}
+.ef{z-index:3;background:linear-gradient(135deg,#f6c4d0,#eba0b3);clip-path:polygon(0 0,50% 54%,100% 0,100% 100%,0 100%)}
+.efl{z-index:4;background:linear-gradient(180deg,#f9d3dc,#e99bb0);clip-path:polygon(0 0,100% 0,50% 58%);transform-origin:50% 0;transition:transform .7s ease,z-index 0s .35s}
+.seal{position:absolute;left:50%;top:50%;z-index:5;transform:translate(-50%,-50%);width:38px;height:38px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#d85a78,#a2304e);color:#fff;display:grid;place-items:center;font-size:17px;box-shadow:0 3px 8px rgba(0,0,0,.3);transition:opacity .3s,transform .5s}
+.env:not(.open){animation:wiggle 3.2s ease-in-out infinite}
+.env.open .efl{transform:rotateX(180deg);z-index:1}
+.env.open .seal{opacity:0;transform:translate(-50%,-50%) scale(.4)}
+.env.lift .el{transform:translateY(-62%)}
+.env.gone{opacity:0;transform:scale(.92) translateY(30px);pointer-events:none}
+#envHint{margin-top:14px;animation:blinkSoft 2s ease-in-out infinite}
+.letter{
+  display:none;width:100%;background:#fffaf0;color:#5a3340;border-radius:6px;padding:30px 22px 24px;position:relative;text-align:left;
+  box-shadow:var(--shadow),0 0 0 1px rgba(0,0,0,.04);font-family:var(--hand);font-size:25px;line-height:1.3;rotate:-.8deg;
+}
+.letter::before{content:"";position:absolute;top:-12px;left:50%;width:84px;height:24px;margin-left:-42px;background:rgba(244,184,198,.8);rotate:-3deg;box-shadow:0 2px 4px rgba(0,0,0,.1)}
+.letter.show{display:block;animation:rise .9s cubic-bezier(.2,.9,.3,1) both}
+.lp{margin:0 0 16px;white-space:pre-line;opacity:0;transform:translateY(8px);transition:opacity 1s ease,transform 1s ease}
+.lp.in{opacity:1;transform:none}
+.lp.close{font-size:27px;color:var(--deep);text-align:right;margin:22px 0 0}
+
+/* PAGE 7 (scrapbook) */
+#p7 h2{font-family:var(--hand);font-style:normal;font-size:38px;margin-top:8px}
+.scrap{position:relative;display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-start;width:100%;padding:18px 0 8px}
+.pol{
+  position:relative;flex:0 0 var(--w,44%);margin:14px 1%;background:#fff;padding:9px 9px 36px;border-radius:4px;rotate:var(--rot,0deg);translate:0 var(--dy,0px);
+  box-shadow:0 10px 24px rgba(90,40,50,.28),0 2px 4px rgba(0,0,0,.08);opacity:0;cursor:pointer;
+  transform:perspective(600px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .25s ease,box-shadow .25s ease;
+}
+.pol.in{opacity:1;animation:drop .85s cubic-bezier(.2,1.2,.4,1) backwards}
+.pol::before{
+  content:"";position:absolute;top:-11px;left:50%;width:62px;height:20px;margin-left:-31px;rotate:var(--tr,-4deg);
+  background:repeating-linear-gradient(90deg,var(--tape,#f4b8c6) 0 8px,rgba(255,255,255,.35) 8px 10px);opacity:.88;box-shadow:0 1px 3px rgba(0,0,0,.12);
+}
+.pol .ph{position:relative;aspect-ratio:1/1;background:linear-gradient(135deg,#f7d6dc,#f3b9c6);overflow:hidden}
+.pol img{width:100%;height:100%;object-fit:cover;display:block}
+.pol .fallback{display:none;position:absolute;inset:0;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#fff;font-weight:800;font-size:12px}
+.pol .fallback svg{width:44px;height:44px;color:#fff}
+.pol.noimg img{display:none}
+.pol.noimg .fallback{display:flex}
+.pol .cap{position:absolute;left:0;right:0;bottom:7px;text-align:center;font-family:var(--hand);font-size:22px;color:#6b3a47;line-height:1}
+.pol .stk{position:absolute;right:-8px;bottom:18px;font-size:24px;rotate:12deg;filter:drop-shadow(0 2px 2px rgba(0,0,0,.2))}
+.pol.zoomed{flex:none;width:min(78vw,340px);margin:0;opacity:1;animation:zoomIn .5s cubic-bezier(.2,1.3,.4,1) backwards;rotate:calc(var(--rot,0deg) * .4);translate:0 0}
+.mini{position:absolute;pointer-events:none;width:30px;height:30px}
+.mini svg{width:100%;height:100%;animation:sway 5s ease-in-out infinite alternate}
+.note{
+  background:#fff3b0;color:#6b4a2a;font-family:var(--hand);font-size:22px;line-height:1.05;padding:12px 16px;rotate:-3deg;margin:6px auto 4px;position:relative;
+  box-shadow:0 8px 16px rgba(90,40,50,.2);max-width:210px;
+}
+.note::before{content:"";position:absolute;top:-9px;left:50%;width:46px;height:16px;margin-left:-23px;background:rgba(244,184,198,.85);rotate:3deg}
+.pmsg{opacity:0;transform:translateY(14px);transition:opacity 1s ease,transform 1s ease;margin-top:16px;white-space:pre-line;max-width:100%}
+.pmsg.in{opacity:1;transform:none}
+.pmsg.m1{font-weight:800;font-size:19px;line-height:1.35;background:rgba(255,255,255,.85);padding:14px 18px;border-radius:20px;box-shadow:var(--shadow)}
+.pmsg.m2{font-family:var(--serif);font-style:italic;font-weight:600;font-size:26px;line-height:1.2;color:var(--deep)}
+.pmsg.m3{font-family:var(--hand);font-size:34px;line-height:1.1;color:var(--deep)}
+#lightbox{position:fixed;inset:0;z-index:30;display:grid;place-items:center;background:rgba(40,16,26,.5);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .35s ease}
+#lightbox.show{opacity:1;pointer-events:auto}
+
+/* PAGE 8 */
+#c8t{font-size:clamp(30px,9vw,42px);margin:0 0 22px}
+.choices{width:100%;display:grid;gap:12px}
+.choice{
+  width:100%;border:0;border-radius:20px;padding:16px 18px;font-weight:800;font-size:17px;cursor:pointer;position:relative;overflow:hidden;
+  transition:transform .18s cubic-bezier(.3,1.6,.5,1),opacity .6s ease,box-shadow .2s;box-shadow:0 8px 18px rgba(143,53,80,.2);
+}
+.choice:active{transform:scale(.96)}
+.choice.c1{background:#fff;color:var(--deep);border:2px solid rgba(143,53,80,.35)}
+.choice.c2{background:#ffd3dd;color:var(--deep)}
+.choice.c3{background:linear-gradient(135deg,var(--rose),var(--deep));color:#fff}
+.choices.picked .choice{pointer-events:none}
+.choices.picked .choice.dim{opacity:.25;transform:scale(.96)}
+.resp{
+  margin-top:24px;font-family:var(--serif);font-style:italic;font-weight:600;font-size:clamp(26px,7.4vw,32px);line-height:1.2;color:var(--deep);
+  white-space:pre-line;min-height:2.6em;
+}
+
+/* PAGE 9 */
+.garden{position:relative;width:100%;display:flex;justify-content:center;align-items:flex-end;gap:2%;opacity:0;transform:translateY(16px);transition:opacity 1.4s ease,transform 1.4s ease}
+.garden.in{opacity:1;transform:none}
+.garden::before{content:"";position:absolute;inset:-12% 0 0;background:radial-gradient(closest-side,rgba(255,190,210,.2),transparent);pointer-events:none}
+.fl{position:relative;width:30%;max-width:130px;text-align:center}
+.fl svg{display:block;width:100%;height:auto;overflow:visible;transition:filter 4.5s ease}
+.fl .whole{transform-box:view-box;transform-origin:60px 268px;transition:transform 4.5s ease-in-out}
+.fl .head{transform-box:view-box;transform-origin:60px 100px;transition:transform 4.5s ease-in-out}
+.fl .fp{transform-box:view-box;opacity:0}
+.garden.wilt .fl.real svg{filter:saturate(.3) sepia(.4) brightness(.86)}
+.garden.wilt .fl.real .whole{transform:rotate(var(--lean,8deg))}
+.garden.wilt .fl.real .head{transform:rotate(var(--droop,55deg)) scale(.9)}
+.garden.wilt .fl.real .fp{animation:fall 3.8s ease-in forwards;animation-delay:var(--fd,0s)}
+.fl.fake.lit svg{filter:drop-shadow(0 0 12px rgba(255,226,160,.85))}
+.fl .tw{animation:twinkle 2.4s ease-in-out infinite}
+.ftag{font-family:var(--hand);font-size:24px;margin-top:4px;opacity:0;transition:opacity 1s ease;min-height:1em}
+.ftag.in{opacity:.9}
+.s9{min-height:170px;margin-top:14px}
+#p9 .ln{font-size:clamp(24px,6.8vw,30px)}
+#p9 .ln.quote{font-size:clamp(30px,8.6vw,40px);line-height:1.15}
+#p9 .ln.sign{font-family:var(--hand);font-style:normal;font-size:36px;margin-top:14px}
+
+/* PAGE 10 */
+#p10 .stage{min-height:320px}
+#p10 .ln{font-family:var(--sans);font-style:normal;font-weight:700;font-size:20px;margin:6px 0}
+#p10 .ln.em{font-family:var(--serif);font-style:italic;font-size:26px;font-weight:600;color:var(--deep)}
+#p10 .ln.ask{font-family:var(--serif);font-style:italic;font-size:clamp(40px,12vw,56px);font-weight:700;color:var(--deep);line-height:1.05}
+#p10 .ln.big2{font-family:var(--serif);font-style:italic;font-size:clamp(36px,10.5vw,50px);font-weight:700;color:var(--deep);line-height:1.1;animation:pop .6s cubic-bezier(.2,1.4,.4,1)}
+#p10 .ln.hand2{font-family:var(--hand);font-style:normal;font-size:38px;color:var(--deep)}
+.row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:6px;transition:opacity .9s ease,transform .9s ease}
+#retryBtn,#againBtn{margin-top:14px}
+
+/* ---------- loader / toast ---------- */
+#loader{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:linear-gradient(160deg,#fff9f1,#f8d9df);color:#6a2c40;transition:opacity .9s ease,visibility 0s .9s}
+#loader.hide{opacity:0;visibility:hidden;pointer-events:none}
+.ld{text-align:center}
+.ld svg{width:56px;height:56px;color:#e58aa3;animation:spin 7s linear infinite}
+.ld p{font-family:var(--serif);font-style:italic;font-size:24px;margin:10px 0 0}
+.ld .bar{width:120px;height:3px;background:rgba(192,97,122,.2);border-radius:3px;margin:14px auto 0;overflow:hidden}
+.ld .bar i{display:block;height:100%;width:0;background:var(--rose);animation:load 1.8s ease forwards}
+#toast{
+  position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 22px);transform:translate(-50%,20px);opacity:0;background:rgba(40,20,28,.9);color:#fff;
+  font-size:13.5px;font-weight:600;padding:10px 16px;border-radius:999px;z-index:35;transition:opacity .4s ease,transform .4s ease;pointer-events:none;max-width:88vw;text-align:center;
+}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- keyframes ---------- */
+@keyframes blink{50%{opacity:0}}
+@keyframes blinkSoft{50%{opacity:.4}}
+@keyframes sway{0%{transform:translateY(0) rotate(-4deg)}100%{transform:translateY(-9px) rotate(5deg)}}
+@keyframes rip{to{transform:scale(4);opacity:0}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+@keyframes nudge{0%{transform:translate(0,0)}40%{transform:translate(var(--nx,6px),var(--ny,-4px))}100%{transform:translate(0,0)}}
+@keyframes pop{from{opacity:0;transform:scale(.7) translateY(8px)}to{opacity:1;transform:none}}
+@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
+@keyframes rise{from{opacity:0;transform:translateY(40px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes drop{from{opacity:0;transform:translateY(-70px) scale(1.12);rotate:calc(var(--rot,0deg) + 14deg)}}
+@keyframes zoomIn{from{opacity:0;transform:scale(.7)}}
+@keyframes wiggle{0%,86%,100%{transform:rotate(0)}90%{transform:rotate(-2.5deg)}94%{transform:rotate(2.5deg)}98%{transform:rotate(-1.2deg)}}
+@keyframes fall{0%{opacity:.95;transform:translate(0,0) rotate(0)}85%{opacity:.9}100%{opacity:.55;transform:translate(var(--fx,20px),172px) rotate(var(--fr,120deg))}}
+@keyframes twinkle{0%,100%{opacity:.2}50%{opacity:1}}
+@keyframes breathe{0%,100%{opacity:.5;transform:scale(.96)}50%{opacity:1;transform:scale(1.05)}}
+@keyframes pulseRing{0%,100%{box-shadow:0 0 0 0 rgba(229,138,163,.55)}50%{box-shadow:0 0 0 8px rgba(229,138,163,0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes load{to{width:100%}}
+
+@media (min-width:700px){
+  .inner{max-width:460px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ loader ============ -->
+<div id="loader">
+  <div class="ld">
+    <svg viewBox="0 0 40 40" aria-hidden="true"><use href="#fl"/></svg>
+    <p>sebentar yaa...</p>
+    <div class="bar"><i></i></div>
+  </div>
+</div>
+
+<!-- ============ shared SVG symbols ============ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="fl" viewBox="0 0 40 40">
+      <g fill="currentColor">
+        <ellipse cx="20" cy="9.5" rx="6" ry="9"/>
+        <ellipse cx="20" cy="9.5" rx="6" ry="9" transform="rotate(60 20 20)"/>
+        <ellipse cx="20" cy="9.5" rx="6" ry="9" transform="rotate(120 20 20)"/>
+        <ellipse cx="20" cy="9.5" rx="6" ry="9" transform="rotate(180 20 20)"/>
+        <ellipse cx="20" cy="9.5" rx="6" ry="9" transform="rotate(240 20 20)"/>
+        <ellipse cx="20" cy="9.5" rx="6" ry="9" transform="rotate(300 20 20)"/>
+      </g>
+      <circle cx="20" cy="20" r="4.6" fill="#fff3c4"/>
+    </symbol>
+    <symbol id="st" viewBox="0 0 24 24">
+      <path fill="currentColor" d="M12 0c.8 6.2 5.8 11.2 12 12-6.2.8-11.2 5.8-12 12-.8-6.2-5.8-11.2-12-12C6.2 11.2 11.2 6.2 12 0z"/>
+    </symbol>
+    <symbol id="ht" viewBox="0 0 24 24">
+      <path fill="currentColor" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="bg" id="bgA"></div>
+<div class="bg" id="bgB"></div>
+<canvas id="fx"></canvas>
+
+<!-- ============ UI ============ -->
+<div id="ui">
+  <div id="progress"></div>
+  <button id="back" class="icon-btn" aria-label="kembali">‹</button>
+  <div id="music">
+    <button id="mMute" class="icon-btn" aria-label="mute atau unmute"></button>
+    <button id="mPlay" class="pill pulse">♫ play</button>
+  </div>
+</div>
+
+<main id="app">
+
+  <!-- PAGE 0 — OPENING -->
+  <section class="page skippable" id="p0">
+    <div class="inner">
+      <div class="big" id="o1"></div>
+      <div class="sub" id="o2"></div>
+      <button class="btn hidden" id="openBtn" data-t="openBtn"></button>
+    </div>
+  </section>
+
+  <!-- PAGE 1 — JANGAN MARAH DULU -->
+  <section class="page" id="p1">
+    <div class="inner">
+      <h1 id="p1Title"></h1>
+      <div class="hand" id="p1Sub"></div>
+      <button class="btn soft hidden" id="p1Btn"></button>
+    </div>
+  </section>
+
+  <!-- PAGE 2 — MINI GAME -->
+  <section class="page" id="p2">
+    <div class="inner">
+      <div class="glass">
+        <span class="tag" data-t="quizTag"></span>
+        <h2 data-t="quizTitle"></h2>
+        <div class="qprog" id="qprog"></div>
+        <div id="qbody"></div>
+      </div>
+      <button class="btn next hidden" data-next data-t="next"></button>
+    </div>
+  </section>
+
+  <!-- PAGE 3 — HAL-HAL KECIL -->
+  <section class="page" id="p3">
+    <div class="inner">
+      <span class="tag" data-t="cardsTag"></span>
+      <h2 data-t="cardsTitle"></h2>
+      <p class="hint" data-t="cardsHint"></p>
+      <div class="cards" id="cards"></div>
+      <div class="counter" id="cardCount"></div>
+      <button class="btn next hidden" data-next data-t="next"></button>
+    </div>
+  </section>
+
+  <!-- PAGE 4 — FAKE CHAT -->
+  <section class="page" id="p4">
+    <div class="inner" style="max-width:420px">
+      <div class="chatwrap">
+        <div class="chead">
+          <div class="av" id="chatAv"></div>
+          <div><b id="chatName"></b><small data-t="chatStatus"></small></div>
+        </div>
+        <div class="msgs" id="msgs"></div>
+        <div class="dock" id="dock">
+          <div class="dlabel" data-t="chatPick"></div>
+          <div class="cgrid" id="cgrid"></div>
+          <button class="btn next hidden" data-next data-t="next"></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAGE 5 — MOMEN SERIUS -->
+  <section class="page skippable" id="p5">
+    <div class="inner">
+      <div class="stage" id="s5"></div>
+      <button class="btn soft next hidden" data-next data-t="next"></button>
+    </div>
+    <div class="tip" id="tip5" data-t="tip"></div>
+  </section>
+
+  <!-- PAGE 6 — SURAT -->
+  <section class="page" id="p6">
+    <div class="inner">
+      <div class="hand" id="l1"></div>
+      <div class="env" id="env" role="button" tabindex="0" aria-label="buka amplop">
+        <div class="eb"></div>
+        <div class="el"><span id="envTo"></span></div>
+        <div class="ef"></div>
+        <div class="efl"></div>
+        <span class="seal">♥</span>
+      </div>
+      <div class="hint" id="envHint" data-t="envHint"></div>
+      <article class="letter" id="letter"></article>
+      <button class="btn next hidden" data-next data-t="next"></button>
+    </div>
+  </section>
+
+  <!-- PAGE 7 — POLAROID -->
+  <section class="page" id="p7">
+    <div class="inner" style="max-width:460px">
+      <span class="tag" data-t="polTag"></span>
+      <h2 data-t="polTitle"></h2>
+      <div class="scrap" id="scrap"></div>
+      <div class="note" id="note"></div>
+      <div class="pmsg m1" id="pm1"></div>
+      <div class="pmsg m2" id="pm2"></div>
+      <div class="pmsg m3" id="pm3"></div>
+      <button class="btn next hidden" data-next data-t="next"></button>
+    </div>
+  </section>
+
+  <!-- PAGE 8 — TIGA PILIHAN -->
+  <section class="page" id="p8">
+    <div class="inner">
+      <h2 id="c8t"></h2>
+      <div class="choices" id="choices"></div>
+      <div class="resp" id="resp"></div>
+      <button class="btn next hidden" data-next data-t="next"></button>
+    </div>
+  </section>
+
+  <!-- PAGE 9 — BUNGA -->
+  <section class="page skippable" id="p9">
+    <div class="inner">
+      <div class="garden" id="garden"></div>
+      <div class="stage s9" id="s9"></div>
+      <button class="btn soft next hidden" data-next data-t="next"></button>
+    </div>
+    <div class="tip" id="tip9" data-t="tip"></div>
+  </section>
+
+  <!-- PAGE 10 — FINAL -->
+  <section class="page skippable" id="p10">
+    <div class="inner">
+      <div class="stage" id="s10"></div>
+      <div class="row hidden" id="fBtns">
+        <button class="btn" id="yesBtn"></button>
+        <button class="btn soft" id="noBtn"></button>
+      </div>
+      <button class="btn soft hidden" id="retryBtn"></button>
+      <button class="btn ghost hidden" id="againBtn" data-t="again"></button>
+    </div>
+    <div class="tip" id="tip10" data-t="tip"></div>
+  </section>
+
+</main>
+
+<div id="lightbox"></div>
+<div id="toast"></div>
+<div class="grain"></div>
+
+<script>
+/* ================================================================
+   CONFIG — semua yang sering diganti ada di sini
+   - herName / signature : nama & tanda tangan
+   - colors              : warna utama (dipakai sebagai CSS variable)
+   - pages               : background + warna teks + jumlah kelopak tiap halaman
+   - music / photos      : path file musik & foto (taruh di folder assets/)
+   - text, quiz, cards, chat, serious, letter, ... : semua teks
+================================================================ */
+const CONFIG = {
+  pageTitle: "psst... 💌",
+  herName: "Lian",
+  signature: "— daw",
+
+  colors: {
+    blush: "#f8d9df",
+    dusty: "#d99aa9",
+    rose:  "#c0617a",
+    deep:  "#8f3550",
+    cream: "#fff1e0",
+    ivory: "#fffaf4",
+    ink:   "#4b2a36"
+  },
+  petalColors: ["#f5b7c5", "#f8cdd6", "#e9889f", "#fbe0e5", "#ffd9c9"],
+
+  music: { src: "assets/music/song.mp3", volume: 0.6, loop: true },
+
+  /* background gradient + warna teks + jumlah kelopak per halaman (urut halaman 0..10) */
+  pages: [
+    /* 0 opening   */ { bg: "radial-gradient(120% 80% at 50% 0%, #fff9f1 0%, #fbe3e6 60%, #f4c9d3 100%)", ink: "#5a2e3b", petals: 8 },
+    /* 1 jangan marah */ { bg: "radial-gradient(90% 60% at 80% 8%, #ffe9ee 0%, transparent 60%), linear-gradient(165deg,#f8c9d4 0%,#ef9fb5 100%)", ink: "#6a1f3a", petals: 16 },
+    /* 2 mini game */ { bg: "radial-gradient(circle at 1px 1px, rgba(214,130,152,.35) 1.6px, transparent 0) 0 0/22px 22px, linear-gradient(170deg,#fff6e8,#fde1e6)", ink: "#4b2a36", petals: 8 },
+    /* 3 kartu     */ { bg: "repeating-linear-gradient(135deg, rgba(255,255,255,.38) 0 14px, transparent 14px 28px), linear-gradient(170deg,#fde7e7,#f7c7d1)", ink: "#4b2a36", petals: 10 },
+    /* 4 chat      */ { bg: "linear-gradient(170deg,#fff3ea,#f9d9dc)", ink: "#4b2a36", petals: 6 },
+    /* 5 serius    */ { bg: "radial-gradient(90% 70% at 50% 35%, #5b2d43 0%, #2a1520 70%, #1a0d14 100%)", ink: "#ffe8ec", petals: 4, dark: true },
+    /* 6 surat     */ { bg: "radial-gradient(80% 60% at 50% 45%, #8a4a5b 0%, #4a2634 78%)", ink: "#ffeef0", petals: 6, dark: true },
+    /* 7 polaroid  */ { bg: "linear-gradient(rgba(255,255,255,.4) 1px, transparent 1px) 0 0/26px 26px, linear-gradient(90deg, rgba(255,255,255,.4) 1px, transparent 1px) 0 0/26px 26px, linear-gradient(160deg,#f6e3d0,#f1d3c9)", ink: "#4b2a36", petals: 12 },
+    /* 8 pilihan   */ { bg: "linear-gradient(165deg,#ffe3df,#f4b9c8 70%,#e9a0b5)", ink: "#5a2236", petals: 12 },
+    /* 9 bunga     */ { bg: "radial-gradient(80% 60% at 50% 40%, #4d2b45 0%, #26142a 80%)", ink: "#ffe8ee", petals: 5, dark: true },
+    /* 10 final    */ { bg: "linear-gradient(180deg,#fffdf9,#fff1ea)", ink: "#5a2e3b", petals: 10 }
+  ],
+
+  text: {
+    open1: "sshut...",
+    open2: "aku punya sesuatu buat kamu. \ntapi pencet lagunya di pojok kanan atas dulu",
+    openBtn: "buka dulu",
+
+    p1Title: ["JANGAN", "MARAH", "DULU 😜"],
+    p1Sub: "aku tau kamu mw dibujuk.",
+    p1Btn: "aku cuma mau nanya bentar...",
+    p1Btn2: "serius, bentar aja kok...",
+
+    quizTag: "mini game",
+    quizTitle: "seberapa kenal kamu sama aku?",
+    quizScore: "skor",
+    quizDone: "ternyata kamu lumayan kenal aku ya wkwk",
+    quizDone2: "makanya sekarang aku mau cerita sedikit...",
+
+    cardsTag: "hal-hal kecil",
+    cardsTitle: "tentang kamu",
+    cardsHint: "tap kartunya yaa 👆",
+    cardsOpened: "dibuka",
+    tapMe: "tap ✿",
+
+    chatStatus: "online",
+    chatToday: "hari ini",
+    chatPick: "gua jawab apa?",
+
+    tip: "tap di mana aja buat lanjut lebih cepet",
+
+    letterIntro: "ada satu hal lagi...",
+    envHint: "tap amplopnya",
+
+    polTag: "scrapbook",
+    polTitle: "fotonya si artis",
+
+    choiceTitle: "sekarang aku kasih kamu pilihan.",
+
+    next: "lanjut →",
+    again: "baca ulang dari awal ↺",
+
+    musicPlay: "♫ play",
+    musicPause: "♫ pause",
+    musicMissing: "lagunya belum ditaruh di assets/music/song.mp3 nih"
+  },
+
+  /* pertanyaan mini game. "answer" = index jawaban yang dianggap benar (mulai dari 0).
+     Ganti pertanyaan, pilihan, dan jawaban sesuai kamu & Lian. */
+  quiz: {
+    good: ["bener banget! ups", "yaa ampun mulai tw", "fiks dukun sih"],
+    meh:  ["hampir wkwk", "titut salah", "salah dikit doang kok"],
+    questions: [
+      { q: "hal random apa yang paling sering aku omongin?",
+        options: ["bahas bocil titut", "bahas kiamat sama presiden", "bahas hal absurd apa ajalah"], answer: 2 },
+      { q: "aku lebih sering bilang \"rek\" atau \"jir\"?",
+        options: ["rek", "jir", "dua-duanya, lah"], answer: 2 },
+      { q: "kalau aku lagi overthinking, biasanya gimana?",
+        options: ["turu sampe mampus", "keluar nyari angin", "cerewet pengen dimengerti"], answer: 1 },
+      { q: "aku kalo kangen kamu ngapain?",
+        options: ["turu sampe kebawa mimpi", "ngelewatin searah sama rumahmu", "suka repost atau kirim reels tentangmu"], answer: 1 }
+    ]
+  },
+
+  /* kartu yang bisa di-flip */
+  cards: [
+    { front: "Aku suka kamu cerita terus.", back: "kalo kamu suka cerita random apapun itu, justru ini yang buat topik bicara aku ada terus." },
+    { front: "Ngeyel sama Batu ultra pro max", back: "jujurly ini kesel, cuma keselnya itu bikin gua kangen trs merhatiin hal kecil tentangmu angjay" },
+    { front: "Takutan sama Overthinkingan", back: "tau sih bos elu takut apapun itu, sama ovt, cuma yaa jangan kelamaan ga baik buwat anak kecil" },
+    { front: "Ngambekan", back: "ampunnn takut gua mah, kan kata orang klo marah entar cepet tuwa jadi takut menua bersama eaak," },
+    { front: "Ego mu", back: "apala masa orang sama egonya, lebih tinggian egonya (lian : awas lu) AHAYYYY" }
+  ],
+
+  /* fake chat. from: "her" (Lian, kiri) atau "me" (aku, kanan) */
+  chat: {
+    startTime: "23.31",
+    script: [
+      { from: "her", t: "aku masih marah y." },
+      { from: "me",  t: "emang nenek bisa mayah?" },
+      { from: "her", t: "njs, marah banget." },
+      { from: "me",  t: "mw eskrim? uda lama blm es nich" },
+      { from: "her", t: "g mut." },
+      { from: "me",  t: "mw apaa?" },
+      { from: "her", t: "mw smwnya" },
+      { from: "me",  t: "GUA JUGA?" },
+      { from: "her", t: "njs, pikir sendiri." },
+      { from: "me",  t: "marah marah aja, tapi kok lucunya dibawa bawa" },
+      { from: "her", t: "gombalan maut." }
+    ],
+    choices: [
+      { label: "aku minta maaf", replies: [
+        { from: "me",  t: "aku minta maaf yaa. bestii" },
+        { from: "her", t: "yek, tapi masi m a r a h" },
+        { from: "me",  t: "DUH GUSTII kenapacih" },] },
+      { label: "anu es krim", replies: [
+        { from: "me",  t: "yok, beli eskyim kapan?" },
+        { from: "her", t: "mls, g mut." },
+        { from: "me",  t: "mut nya apa" }, 
+        { from: "her", t: "pikir sendiri." },
+        { from: "me",  t: "kan always mikirin kamu AHAYY" }, 
+        { from: "her", t: "PRET, GOMBAL trs" },
+        { from: "me",  t: "soalnya yg kek gua gada duanya😝" },] },
+      { label: "nanya mau apa", replies: [
+        { from: "me",  t: "lagi bm apa mw apa sekarang?" },
+        { from: "her", t: "mw semwnya" },
+        { from: "me",  t: "ya gua jangan dimakan juga" }, 
+        { from: "her", t: "NJS" },
+        { from: "me",  t: "kampret wong iki awas aja" },] },
+      { label: "aku diem dulu", replies: [
+        { from: "me",  t: "..." },
+        { from: "her", t: "kok diem" },
+        { from: "me",  t: "katanya lagi marah" },
+        { from: "her", t: "LOS" }, 
+        { from: "her", t: "gatau njs" },
+        { from: "her", t: "pikir sendiri." },
+        { from: "me",  t: "KAMPRET, jirlah😹" },] }
+    ]
+  },
+
+  /* halaman serius: array of group, tiap group = beberapa baris yang muncul satu per satu */
+  serious: [
+    ["tapi serius..."],
+    ["aku minta maaf ya."],
+    ["kalo aku dari dulu suka bikin kamu kesel ehehe.",
+     "pi boonk kan gua ngeselin😜",
+     "AHAHAH bersyandaa, tapi seriyus aku minta maap pliszz"],
+    ["aku ga bikin ini buat bikin kamu merasa bersalah.",
+     "aku juga bikin karna have fun buat mu yang syantikk😜✌️"]
+  ],
+
+  /* isi surat. {name} otomatis diganti herName */
+  letter: {
+    paragraphs: [
+      "{name},",
+      "aku tau mungkin aku kadang nyebelin,\nterlalu banyak mikir,\nterlalu banyak nanya,\natau terlalu banyak ngomong.",
+      "tapi satu hal yang pasti,\nbagiku ini semua first time buatku, hal yang aku gatau aku jadi bisa tau",
+      "jadi kita sama sama belajar yh besti...",
+      "aku selalu banyak belajar buat kamu,\nlebih bisa nahan pikiran aku sendiri,\ndan ga mempermasalahkan hal-hal kecil lagi.",
+      "aku suka sama kita yang sekarang ini,\nbahkan sampai kapanpun itu,\naku merasa kamu ada di bagian hidupku😝"
+    ],
+    closing: "makasih udah baca sampai sini."
+  },
+
+  /* polaroid. ganti file di folder assets/images/. rot=kemiringan, w=lebar (%), dy=geser vertikal (px) */
+  photos: [
+    { src: "assets/images/1.jpeg", caption: "tinggi egonya si",          rot: -6, w: 46, dy: 0,   sticker: "🌸", tape: "#f4b8c6", tapeRot: -5 },
+    { src: "assets/images/2.jpeg", caption: "fiks bidadari", rot: 5,  w: 42, dy: 26,  sticker: "✨", tape: "#fbe3a7", tapeRot: 4 },
+    { src: "assets/images/3.jpeg", caption: "banjir nangis🤭", rot: 3, w: 44, dy: -4,  sticker: "🎀", tape: "#f7d3b8", tapeRot: -3 },
+    { src: "assets/images/4.jpeg", caption: "ekspresi guwa😝",  rot: -4, w: 42, dy: 20,  sticker: "🌷", tape: "#f4b8c6", tapeRot: 5 }
+  ],
+  polaroidNote: "req banyak mw aku buat album",
+  polaroidLines: [
+    "ini foto bidadari koq cuma ini aja yah, soalnya di WA stiker smw eak",
+    "emang yang banyak cuma di story nya aja",
+    "padahal penyimpanan gua \nmasih sisa banyak loh ya buat jaga jaga ups (ngode)"
+  ],
+
+  /* halaman 3 pilihan */
+  choices: [
+    { label: "aku masih marah🤬",    cls: "c1", res: "iya iya... marah dulu aws ntar\nsampe tuwa aja dech kita" },
+    { label: "aku mulai luluh dikit😇", cls: "c2", res: "NAHH...\nberarti website ini ga sia-sia wkwk.", bloom: true },
+    { label: "gatau bingung",           cls: "c3", res: "TUH KAN\nwong iki, dikasih 3 pilihan jelas malah milih iki", bloom: true }
+  ],
+
+  /* halaman bunga */
+  flowers: {
+    tags: { real: "asli", fake: "palsu" },
+    lines: {
+      a: "Seorang pria memberikan 3 bunga.",
+      b: "2 diantaranya bunga asli.",
+      c: "dan 1 bunga palsu.",
+      d: "lalu dia berkata...",
+      quote: "I will love you until the last flower dies.",
+      e: "yang terakhir ini...",
+      f: "aku sengaja pilih yang palsu.",
+      g: "karena aku ga mau janji yang aku kasih punya akhir. harusnya ini abadi"
+    }
+  },
+
+  /* halaman final */
+  final: {
+    groups: [
+      [ { t: "oke...", hold: 1400 },
+        { t: "sekarang kamu tau kenapa aku bikin ini.", hold: 2000 },
+        { t: "bukan buat menang.", hold: 1600 },
+        { t: "bukan buat bikin kamu merasa bersalah.", hold: 1800 },
+        { t: "bukan juga supaya kamu langsung berhenti marah.", hold: 2400 } ],
+      [ { t: "aku cuma mau kamu tau...", hold: 2000 },
+        { t: "aku lebih suka kita yang sekarang", cls: "em", hold: 1900 },
+        { t: "setelah melewati beberapa tahap", cls: "em", hold: 1800 },
+        { t: "karna...", cls: "em", hold: 2000 },
+        { t: "merasakan sesuatu yang hilang dari hidup, bukanlah hal yang aku mau", hold: 2600 } ]
+    ],
+    question: "udah baikan belum?",
+    yes: "iya deh...",
+    no: "masih marah",
+    yesRes: "NAHHH GITU DONG BESTI GUE",
+    thanks: "makasih yaa...",
+    noRes: "loh...\nberarti berarti mau sampe tuwa bersama? AHAY",
+    retry: "tanya lagi"
+  }
+};
+
+/* ================================================================
+   DEKORASI — [simbol, warna, left%, top%, ukuran px, kedalaman parallax, rotasi]
+================================================================ */
+const DECOR = {
+  0: [["fl","#f2a2b5",-4,8,64,14,-14],["st","#ffffff",84,16,22,10,0],["ht","#f3a5b8",82,70,34,18,12],["fl","#f9cdd6",6,76,48,12,20]],
+  1: [["st","#ffffff",8,10,26,14,0],["ht","#ffffff",84,24,34,16,14],["fl","#fff7f9",78,80,58,12,-10],["st","#ffe6ee",10,72,20,10,0]],
+  2: [["fl","#f2a2b5",84,8,40,12,10],["st","#e58aa3",6,14,18,10,0],["ht","#e58aa3",88,84,26,12,-8]],
+  3: [["ht","#ffffff",6,12,28,12,-10],["fl","#ffffff",88,10,40,14,16],["st","#ffffff",90,88,20,10,0]],
+  4: [["fl","#f2a2b5",93,3,34,10,10]],
+  5: [["st","#ffd9e2",12,14,16,12,0],["st","#ffd9e2",86,26,12,10,0],["st","#ffd9e2",20,86,14,8,0],["st","#ffd9e2",80,80,18,14,0]],
+  6: [["st","#ffe2b0",10,18,18,12,0],["st","#ffe2b0",88,22,14,10,0],["ht","#f2a2b5",86,84,26,14,10]],
+  7: [["fl","#f4a8bb",1,6,48,12,-10],["fl","#ffffff",90,5,36,10,12]],
+  8: [["ht","#ffffff",8,16,30,14,-12],["fl","#ffffff",88,14,44,12,12],["st","#ffffff",12,82,22,10,0],["ht","#ffd3dd",86,80,34,16,10]],
+  9: [["st","#ffe2b0",10,12,16,12,0],["st","#ffe2b0",88,18,12,10,0],["st","#ffd9e2",14,88,12,8,0]],
+  10:[["fl","#f6b8c6",-4,10,60,12,-12],["fl","#f9d2da",88,82,64,12,14],["st","#f2a2b5",90,12,18,10,0],["ht","#f6b8c6",8,86,28,14,-8]]
+};
+
+/* ================================================================
+   ENGINE — biasanya ga perlu diubah
+================================================================ */
+(() => {
+"use strict";
+
+const T = CONFIG.text;
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text !== undefined) n.textContent = text; return n; };
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const buzz = ms => { try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} };
+const org = n => { const r = n.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; };
+const subst = s => s.split("{name}").join(CONFIG.herName);
+const pad = n => String(n).padStart(2, "0");
+
+/* ---------- timeline helpers (semua timer dibatalkan saat pindah halaman) ---------- */
+let epoch = 0, timers = new Set(), skipFn = null;
+const CANCEL = Symbol("cancel");
+
+function sleep(ms, onSkip) {
+  return new Promise(res => {
+    const id = setTimeout(() => { timers.delete(id); skipFn = null; res(); }, ms);
+    timers.add(id);
+    skipFn = () => { clearTimeout(id); timers.delete(id); skipFn = null; if (onSkip) onSkip(); res(); };
+  });
+}
+async function wait(ms, onSkip) { const e = epoch; await sleep(ms, onSkip); if (e !== epoch) throw CANCEL; }
+function later(fn, ms) { const id = setTimeout(() => { timers.delete(id); fn(); }, ms); timers.add(id); return id; }
+function run(fn) { Promise.resolve().then(fn).catch(err => { if (err !== CANCEL) console.error(err); }); }
+function stopAll() { epoch++; timers.forEach(clearTimeout); timers.clear(); skipFn = null; }
+
+async function type(node, text, speed = 36) {
+  const chars = Array.from(text); let fast = false;
+  node.textContent = ""; node.classList.add("caret");
+  for (let i = 0; i < chars.length; i++) {
+    node.textContent += chars[i];
+    if (!fast) await wait(speed + (/[.,…?!]/.test(chars[i]) ? 120 : 0), () => { fast = true; });
+  }
+  node.classList.remove("caret");
+}
+
+function Stage(box) {
+  return {
+    box,
+    reset() { box.innerHTML = ""; },
+    line(text, cls = "") { const d = el("div", "ln " + cls, text); box.appendChild(d); void d.offsetWidth; d.classList.add("in"); return d; },
+    async typed(text, cls = "", speed = 38) { const d = el("div", "ln in " + cls); box.appendChild(d); await type(d, text, speed); return d; },
+    async clear() { const k = Array.from(box.children); k.forEach(n => n.classList.add("gone")); await wait(650); k.forEach(n => n.remove()); }
+  };
+}
+
+/* ================================================================
+   FX — kelopak, partikel, burst
+================================================================ */
+const FX = (() => {
+  const cv = $("#fx"), ctx = cv.getContext ? cv.getContext("2d") : null;
+  const RM = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let W = 0, H = 0, petals = [], sparks = [], burst = [], target = 8, dark = false, last = 0;
+  const COL = CONFIG.petalColors;
+  const rnd = (a, b) => a + Math.random() * (b - a);
+
+  function resize() {
+    if (!ctx) return;
+    const d = Math.min(window.devicePixelRatio || 1, 2);
+    W = innerWidth; H = innerHeight;
+    cv.width = W * d; cv.height = H * d; cv.style.width = W + "px"; cv.style.height = H + "px";
+    ctx.setTransform(d, 0, 0, d, 0, 0);
+  }
+  const mk = (i, top) => ({ i, on: true, x: rnd(0, W), y: top ? rnd(-60, -10) : rnd(0, H), s: rnd(5, 10), vy: rnd(.25, .7), vx: rnd(-.15, .25), ph: rnd(0, 6.28), sw: rnd(.4, 1), rot: rnd(0, 6.28), vr: rnd(-.015, .015), c: COL[(Math.random() * COL.length) | 0], a: rnd(.5, .9) });
+
+  function drawPetal(p, alpha) {
+    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.scale(Math.abs(Math.cos(p.ph * 1.3)) * .5 + .55, 1);
+    ctx.globalAlpha = alpha; ctx.fillStyle = p.c; ctx.beginPath();
+    ctx.moveTo(0, -p.s); ctx.bezierCurveTo(p.s * .9, -p.s * .6, p.s * .7, p.s * .7, 0, p.s); ctx.bezierCurveTo(-p.s * .7, p.s * .7, -p.s * .9, -p.s * .6, 0, -p.s);
+    ctx.fill(); ctx.restore();
+  }
+  function step(t) {
+    requestAnimationFrame(step);
+    if (document.hidden || !ctx) return;
+    const dt = clamp((t - last) / 16.7 || 1, .2, 3); last = t;
+    ctx.clearRect(0, 0, W, H);
+    for (const p of petals) {
+      if (!p.on) continue;
+      p.ph += .02 * dt; p.x += (p.vx + Math.sin(p.ph) * p.sw * .6) * dt; p.y += p.vy * dt; p.rot += p.vr * dt;
+      if (p.y > H + 20 || p.x > W + 30 || p.x < -30) { if (p.i < target) Object.assign(p, mk(p.i, true)); else { p.on = false; continue; } }
+      drawPetal(p, dark ? p.a * .7 : p.a);
+    }
+    ctx.fillStyle = dark ? "#ffe9b8" : "#e58aa3";
+    for (const s of sparks) {
+      s.ph += s.sp * dt; s.y += s.vy * dt; if (s.y < -5) { s.y = H + 5; s.x = rnd(0, W); }
+      ctx.globalAlpha = Math.max(0, (Math.sin(s.ph) * .5 + .5) * (dark ? .75 : .4));
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 6.283); ctx.fill();
+    }
+    for (let i = burst.length - 1; i >= 0; i--) {
+      const b = burst[i]; b.vy += .07 * dt; b.x += b.vx * dt; b.y += b.vy * dt; b.rot += b.vr * dt; b.life -= .007 * dt; b.ph += .08 * dt;
+      if (b.life <= 0 || b.y > H + 30) { burst.splice(i, 1); continue; }
+      drawPetal(b, clamp(b.life, 0, 1));
+    }
+    ctx.globalAlpha = 1;
+  }
+  return {
+    init() {
+      resize(); addEventListener("resize", resize);
+      petals = Array.from({ length: 20 }, (_, i) => Object.assign(mk(i, false), { on: i < target }));
+      sparks = Array.from({ length: 12 }, () => ({ x: rnd(0, W), y: rnd(0, H), r: rnd(.8, 2), ph: rnd(0, 6.28), sp: rnd(.01, .03), vy: rnd(-.12, -.03) }));
+      requestAnimationFrame(step);
+    },
+    set(n, dk) {
+      target = RM ? Math.min(n, 4) : n; dark = !!dk;
+      petals.forEach(p => { if (p.i < target && !p.on) Object.assign(p, mk(p.i, true)); });
+    },
+    bloom(x, y, n = 30) {
+      if (RM) return;
+      for (let i = 0; i < n; i++) {
+        const a = rnd(-Math.PI, 0), v = rnd(2, 7);
+        burst.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 1, s: rnd(5, 10), ph: rnd(0, 6), rot: rnd(0, 6), vr: rnd(-.1, .1), c: COL[(Math.random() * COL.length) | 0], life: rnd(.8, 1.3) });
+      }
+    }
+  };
+})();
+
+/* ================================================================
+   MUSIC
+================================================================ */
+const Music = {
+  audio: null, played: false,
+  init() {
+    const a = new Audio(); a.src = CONFIG.music.src; a.loop = CONFIG.music.loop; a.volume = CONFIG.music.volume; a.preload = "none";
+    this.audio = a;
+    a.addEventListener("pause", () => this.ui());
+    a.addEventListener("play", () => this.ui());
+    $("#mPlay").addEventListener("click", () => this.toggle());
+    $("#mMute").addEventListener("click", () => { a.muted = !a.muted; this.ui(); });
+    this.ui();
+  },
+  async toggle() {
+    const a = this.audio;
+    if (!a.paused) { a.pause(); return; }
+    try { await a.play(); this.played = true; $("#mPlay").classList.remove("pulse"); }
+    catch (err) { toast(T.musicMissing); }
+    this.ui();
+  },
+  ui() {
+    const a = this.audio;
+    $("#mPlay").textContent = a && !a.paused ? T.musicPause : T.musicPlay;
+    const m = $("#mMute"); m.classList.toggle("show", this.played);
+    const on = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
+    const off = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="m22 9-6 6"/><path d="m16 9 6 6"/></svg>';
+    m.innerHTML = a && a.muted ? off : on;
+  }
+};
+let toastTimer = 0;
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 3200); }
+
+/* ================================================================
+   NAVIGATION
+================================================================ */
+const pages = $$(".page"), N = pages.length;
+let cur = -1, busy = false;
+const done = new Set();
+const enter = [];
+
+const bgA = $("#bgA"), bgB = $("#bgB");
+let bgTop = bgA, bgFirst = true;
+function setBg(grad, o) {
+  if (bgFirst) { bgFirst = false; bgA.style.background = grad; bgA.style.opacity = 1; return; }
+  const nxt = bgTop === bgA ? bgB : bgA, prev = bgTop;
+  nxt.style.transition = "none"; nxt.style.background = grad; nxt.style.zIndex = 2; prev.style.zIndex = 1;
+  if (o) { nxt.style.opacity = 1; nxt.style.clipPath = `circle(0px at ${o.x}px ${o.y}px)`; }
+  else { nxt.style.opacity = 0; nxt.style.clipPath = "none"; }
+  void nxt.offsetWidth;
+  nxt.style.transition = "opacity .9s ease, clip-path 1.1s cubic-bezier(.6,.05,.3,1)";
+  nxt.style.opacity = 1;
+  if (o) nxt.style.clipPath = `circle(150vmax at ${o.x}px ${o.y}px)`;
+  bgTop = nxt;
+  setTimeout(() => { if (prev !== bgTop) prev.style.opacity = 0; }, 1200);
+}
+
+function updateUI() {
+  $$("#progress i").forEach((n, i) => n.classList.toggle("on", i <= cur));
+  $("#back").classList.toggle("show", cur >= 2);
+}
+
+async function go(n, origin) {
+  if (busy || n === cur || n < 0 || n >= N) return;
+  busy = true;
+  const prev = cur;
+  stopAll();
+  $("#lightbox").classList.remove("show");
+  const th = CONFIG.pages[n];
+  cur = n;
+  document.body.style.color = th.ink;
+  setBg(th.bg, origin);
+  FX.set(th.petals, th.dark);
+  if (prev >= 0) { pages[prev].classList.remove("active"); pages[prev].classList.add("out"); }
+  updateUI();
+  await new Promise(r => setTimeout(r, prev >= 0 ? 520 : 100));
+  if (prev >= 0) pages[prev].classList.remove("out");
+  pages[n].scrollTop = 0;
+  pages[n].classList.add("active");
+  enter[n]();
+  setTimeout(() => { busy = false; }, 450);
+}
+
+const nextBtn = i => $("[data-next]", pages[i]);
+const syncNext = i => { const b = nextBtn(i); if (b) b.classList.toggle("hidden", !done.has(i)); };
+const openNext = i => { done.add(i); const b = nextBtn(i); if (b) b.classList.remove("hidden"); };
+
+/* ================================================================
+   PAGE 0 — OPENING
+================================================================ */
+enter[0] = () => run(async () => {
+  const o1 = $("#o1"), o2 = $("#o2"), b = $("#openBtn");
+  o1.textContent = ""; o2.textContent = ""; o1.classList.remove("caret"); o2.classList.remove("caret"); b.classList.add("hidden");
+  await wait(700);
+  await type(o1, T.open1, 95);
+  await wait(1500);
+  await type(o2, T.open2, 48);
+  await wait(500);
+  b.classList.remove("hidden");
+});
+$("#openBtn").addEventListener("click", e => go(1, org(e.currentTarget)));
+
+/* ================================================================
+   PAGE 1 — JANGAN MARAH DULU
+================================================================ */
+let p1lock = false;
+(() => {
+  const h = $("#p1Title"), rots = ["-3deg", "2deg", "-2deg", "3deg"];
+  T.p1Title.forEach((w, i) => { const s = el("span", "w", w); s.style.setProperty("--r", rots[i % rots.length]); h.appendChild(s); });
+})();
+enter[1] = () => run(async () => {
+  const words = $$("#p1Title .w"), sub = $("#p1Sub"), b = $("#p1Btn");
+  p1lock = false; words.forEach(w => w.classList.remove("in")); sub.textContent = ""; sub.classList.remove("caret");
+  b.textContent = T.p1Btn; b.classList.add("hidden");
+  await wait(450);
+  for (const w of words) { w.classList.add("in"); await wait(380); }
+  await wait(250);
+  await type(sub, T.p1Sub, 50);
+  await wait(450);
+  b.classList.remove("hidden");
+});
+$("#p1Btn").addEventListener("pointerdown", e => {
+  const b = e.currentTarget;
+  b.style.setProperty("--nx", (Math.random() * 16 - 8).toFixed(1) + "px");
+  b.style.setProperty("--ny", (Math.random() * 10 - 5).toFixed(1) + "px");
+  b.classList.remove("nudge"); void b.offsetWidth; b.classList.add("nudge");
+});
+$("#p1Btn").addEventListener("click", e => {
+  if (p1lock) return; p1lock = true;
+  const b = e.currentTarget; b.textContent = T.p1Btn2; b.classList.remove("shake"); void b.offsetWidth; b.classList.add("shake");
+  const o = org(b);
+  later(() => go(2, o), 1200);
+});
+
+/* ================================================================
+   PAGE 2 — MINI GAME
+================================================================ */
+let qi = 0, qscore = 0, qlock = false;
+const QN = CONFIG.quiz.questions.length;
+function qDots() { const p = $("#qprog"); p.innerHTML = ""; for (let i = 0; i < QN; i++) p.appendChild(el("i", i <= qi ? "on" : "")); }
+function renderQ() {
+  qlock = false; qDots();
+  const q = CONFIG.quiz.questions[qi], body = $("#qbody"); body.innerHTML = "";
+  body.appendChild(el("div", "q", q.q));
+  const opts = el("div", "opts"); body.appendChild(opts);
+  const react = el("div", "react"); body.appendChild(react);
+  q.options.forEach((t, i) => {
+    const b = el("button", "opt", t); b.type = "button";
+    b.addEventListener("click", () => {
+      if (qlock) return; qlock = true; opts.classList.add("lock");
+      const ok = i === q.answer;
+      if (ok) { qscore++; b.classList.add("good"); } else { b.classList.add("meh"); opts.children[q.answer].classList.add("right"); }
+      const arr = ok ? CONFIG.quiz.good : CONFIG.quiz.meh;
+      react.textContent = arr[(Math.random() * arr.length) | 0];
+      later(() => { qi++; if (qi < QN) renderQ(); else showResult(false); }, 1500);
+    });
+    opts.appendChild(b);
+  });
+}
+function showResult(instant) {
+  const body = $("#qbody"); body.innerHTML = "";
+  $("#qprog").innerHTML = ""; for (let i = 0; i < QN; i++) $("#qprog").appendChild(el("i", "on"));
+  const r = el("div", "result");
+  const big = el("div", "big", T.quizDone), chip = el("span", "chip", `${T.quizScore} ${qscore}/${QN}`), after = el("div", "after");
+  r.append(big, chip, after); body.appendChild(r);
+  if (instant) { after.textContent = T.quizDone2; openNext(2); return; }
+  run(async () => { await wait(700); await type(after, T.quizDone2, 42); await wait(500); openNext(2); });
+}
+enter[2] = () => {
+  syncNext(2);
+  if (done.has(2)) { showResult(true); return; }
+  qi = 0; qscore = 0; renderQ();
+};
+
+/* ================================================================
+   PAGE 3 — KARTU
+================================================================ */
+const flipped = new Set();
+function cardCount() {
+  const n = CONFIG.cards.length;
+  $("#cardCount").textContent = `${flipped.size}/${n} ${T.cardsOpened}`;
+  if (flipped.size >= n) openNext(3);
+}
+(() => {
+  const box = $("#cards"), tilt = [-1.2, 1, -.8, 1.3, -1];
+  CONFIG.cards.forEach((c, i) => {
+    const f = el("div", "fc fx"); f.style.setProperty("--rot", tilt[i % tilt.length] + "deg"); f.setAttribute("role", "button"); f.tabIndex = 0;
+    const fci = el("div", "fci");
+    const front = el("div", "face front"); front.append(el("span", "no", String(i + 1).padStart(2, "0")), el("p", "", c.front), el("span", "tapme", T.tapMe));
+    const back = el("div", "face back"); back.appendChild(el("p", "", c.back));
+    fci.append(front, back); f.appendChild(fci); box.appendChild(f);
+    const flip = () => { buzz(10); f.classList.toggle("flipped"); if (f.classList.contains("flipped")) flipped.add(i); cardCount(); };
+    f.addEventListener("click", flip);
+    f.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); flip(); } });
+  });
+})();
+enter[3] = () => run(async () => {
+  syncNext(3); cardCount();
+  const cs = $$("#cards .fc"); cs.forEach(c => c.classList.remove("in"));
+  await wait(350);
+  for (const c of cs) { c.classList.add("in"); await wait(170); }
+});
+
+/* ================================================================
+   PAGE 4 — FAKE CHAT
+================================================================ */
+const chat = { msgs: $("#msgs"), dock: $("#dock"), clock: 0, busy: false };
+$("#chatName").textContent = CONFIG.herName;
+$("#chatAv").textContent = CONFIG.herName.charAt(0).toUpperCase();
+function fmtTime() {
+  const [h, m] = CONFIG.chat.startTime.split(".").map(Number), t = h * 60 + m + chat.clock;
+  return pad(Math.floor(t / 60) % 24) + "." + pad(t % 60);
+}
+function chatScroll() { chat.msgs.scrollTop = chat.msgs.scrollHeight; }
+function addBubble(from, text) {
+  const b = el("div", "b " + from); b.appendChild(el("span", "", text)); b.appendChild(el("small", "", fmtTime() + (from === "me" ? " ✓✓" : "")));
+  chat.msgs.appendChild(b); chatScroll(); return b;
+}
+async function typing(from, ms) {
+  const t = el("div", "b typing " + from); t.innerHTML = "<i></i><i></i><i></i>"; chat.msgs.appendChild(t); chatScroll();
+  await wait(ms); t.remove();
+}
+const typeMs = text => clamp(450 + text.length * 22, 600, 1500);
+(() => {
+  const g = $("#cgrid");
+  CONFIG.chat.choices.forEach(c => {
+    const b = el("button", "cbtn", c.label); b.type = "button";
+    b.addEventListener("click", () => run(async () => {
+      if (chat.busy) return; chat.busy = true;
+      $$(".cbtn").forEach(x => { x.disabled = true; }); b.classList.add("picked");
+      for (const m of c.replies) { await typing(m.from, typeMs(m.t)); addBubble(m.from, m.t); chat.clock += 1; await wait(450); }
+      chat.busy = false; $$(".cbtn").forEach(x => { x.disabled = false; }); openNext(4);
+    }));
+    g.appendChild(b);
+  });
+})();
+enter[4] = () => run(async () => {
+  chat.busy = false; chat.clock = 0; chat.msgs.innerHTML = "";
+  $$(".cbtn").forEach(x => { x.disabled = false; x.classList.remove("picked"); });
+  chat.dock.classList.remove("show"); syncNext(4);
+  const instant = done.has(4);
+  chat.msgs.appendChild(el("div", "daychip", T.chatToday));
+  await wait(instant ? 50 : 900);
+  const sc = CONFIG.chat.script;
+  for (let i = 0; i < sc.length; i++) {
+    if (!instant) await typing(sc[i].from, typeMs(sc[i].t));
+    addBubble(sc[i].from, sc[i].t); chat.clock += i % 2;
+    if (!instant) await wait(450);
+  }
+  await wait(instant ? 50 : 600);
+  chat.dock.classList.add("show");
+  await wait(750); chatScroll();
+});
+
+/* ================================================================
+   PAGE 5 — MOMEN SERIUS
+================================================================ */
+enter[5] = () => run(async () => {
+  const st = Stage($("#s5")); st.reset(); syncNext(5); $("#tip5").classList.remove("off");
+  await wait(1000);
+  const G = CONFIG.serious;
+  for (let gi = 0; gi < G.length; gi++) {
+    for (const line of G[gi]) {
+      st.line(line, gi === 0 ? "lead" : "");
+      await wait(Math.max(1900, line.length * 62));
+    }
+    if (gi < G.length - 1) { await wait(400); await st.clear(); await wait(350); }
+  }
+  await wait(1300);
+  $("#tip5").classList.add("off");
+  openNext(5);
+});
+
+/* ================================================================
+   PAGE 6 — SURAT
+================================================================ */
+const env = $("#env"), letter = $("#letter");
+$("#envTo").textContent = CONFIG.herName;
+(() => {
+  CONFIG.letter.paragraphs.forEach(p => letter.appendChild(el("p", "lp", subst(p))));
+  letter.appendChild(el("p", "lp close", CONFIG.letter.closing));
+})();
+let envBusy = false;
+function resetEnv() {
+  envBusy = false; env.className = "env"; env.style.display = ""; letter.className = "letter";
+  $$(".lp", letter).forEach(p => p.classList.remove("in")); $("#envHint").style.display = "";
+}
+function openEnvelope() {
+  if (envBusy) return; envBusy = true; buzz(15);
+  run(async () => {
+    $("#envHint").style.display = "none";
+    env.classList.add("open"); await wait(550);
+    env.classList.add("lift"); await wait(1000);
+    env.classList.add("gone"); await wait(650);
+    env.style.display = "none"; letter.classList.add("show"); await wait(500);
+    const ps = $$(".lp", letter);
+    for (const p of ps) {
+      p.classList.add("in");
+      if (p.scrollIntoView) p.scrollIntoView({ behavior: "smooth", block: "center" });
+      await wait(p.classList.contains("close") ? 1400 : 1100 + p.textContent.length * 12);
+    }
+    openNext(6);
+    nextBtn(6).scrollIntoView && nextBtn(6).scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+}
+env.addEventListener("click", openEnvelope);
+env.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openEnvelope(); } });
+enter[6] = () => run(async () => {
+  resetEnv(); syncNext(6);
+  const l1 = $("#l1"); l1.textContent = ""; l1.classList.remove("caret");
+  if (done.has(6)) {
+    l1.textContent = T.letterIntro; env.style.display = "none"; $("#envHint").style.display = "none";
+    letter.classList.add("show"); $$(".lp", letter).forEach(p => p.classList.add("in")); return;
+  }
+  await wait(600);
+  await type(l1, T.letterIntro, 55);
+});
+
+/* ================================================================
+   PAGE 7 — POLAROID
+================================================================ */
+(() => {
+  const sc = $("#scrap");
+  CONFIG.photos.forEach((p, i) => {
+    const f = el("figure", "pol"); f.style.margin = "";
+    f.style.cssText = `--rot:${p.rot}deg;--dy:${p.dy || 0}px;--w:${p.w || 44}%;--tape:${p.tape || "#f4b8c6"};--tr:${p.tapeRot || -4}deg;`;
+    f.innerHTML = '<div class="ph"><img alt=""><div class="fallback"><svg viewBox="0 0 40 40"><use href="#fl"/></svg><span></span></div></div><figcaption class="cap"></figcaption>';
+    $(".fallback span", f).textContent = "foto " + (i + 1);
+    $(".cap", f).textContent = p.caption || "";
+    if (p.sticker) { const s = el("span", "stk", p.sticker); f.appendChild(s); }
+    const img = $("img", f); img.addEventListener("error", () => f.classList.add("noimg")); img.src = p.src;
+    /* tilt */
+    f.addEventListener("pointermove", e => {
+      const r = f.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
+      f.style.setProperty("--ry", (x * 14).toFixed(1) + "deg"); f.style.setProperty("--rx", (-y * 14).toFixed(1) + "deg");
+    });
+    const flat = () => { f.style.setProperty("--rx", "0deg"); f.style.setProperty("--ry", "0deg"); };
+    f.addEventListener("pointerleave", flat); f.addEventListener("pointerup", flat); f.addEventListener("pointercancel", flat);
+    f.addEventListener("click", () => zoom(f));
+    sc.appendChild(f);
+  });
+  /* bunga kecil di sekitar */
+  [["8%", "-4px", "#f4a8bb", "0s"], ["88%", "36%", "#ffffff", "-1.4s"], ["2%", "58%", "#f9cdd6", "-2.6s"], ["90%", "88%", "#f4a8bb", "-.8s"]].forEach(([l, t, c, d]) => {
+    const m = el("span", "mini"); m.style.cssText = `left:${l};top:${t};color:${c}`; m.innerHTML = `<svg viewBox="0 0 40 40" style="animation-delay:${d}"><use href="#fl"/></svg>`; sc.appendChild(m);
+  });
+  $("#note").textContent = CONFIG.polaroidNote;
+  CONFIG.polaroidLines.forEach((t, i) => { $("#pm" + (i + 1)).textContent = t; });
+})();
+function zoom(f) {
+  const lb = $("#lightbox"); lb.innerHTML = "";
+  const c = f.cloneNode(true); c.classList.remove("in"); c.classList.add("zoomed"); c.style.removeProperty("--w"); c.style.removeProperty("transform");
+  lb.appendChild(c); lb.classList.add("show"); buzz(12);
+}
+$("#lightbox").addEventListener("click", () => $("#lightbox").classList.remove("show"));
+addEventListener("keydown", e => { if (e.key === "Escape") $("#lightbox").classList.remove("show"); });
+enter[7] = () => run(async () => {
+  syncNext(7);
+  const ps = $$(".pol"), ms = ["#pm1", "#pm2", "#pm3"].map(s => $(s)), note = $("#note");
+  ps.forEach(p => p.classList.remove("in")); ms.forEach(m => m.classList.remove("in")); note.classList.add("fx"); note.classList.remove("in");
+  await wait(500);
+  for (const p of ps) { p.classList.add("in"); buzz(6); await wait(520); }
+  note.classList.add("in"); await wait(900);
+  for (const m of ms) {
+    m.classList.add("in");
+    if (m.scrollIntoView) m.scrollIntoView({ behavior: "smooth", block: "center" });
+    await wait(m.textContent.length > 60 ? 3200 : 2600);
+  }
+  openNext(7);
+  if (nextBtn(7).scrollIntoView) nextBtn(7).scrollIntoView({ behavior: "smooth", block: "center" });
+});
+
+/* ================================================================
+   PAGE 8 — TIGA PILIHAN
+================================================================ */
+enter[8] = () => run(async () => {
+  syncNext(8);
+  const t = $("#c8t"), box = $("#choices"), resp = $("#resp");
+  t.textContent = ""; resp.textContent = ""; resp.classList.remove("caret"); box.innerHTML = ""; box.className = "choices";
+  const btns = CONFIG.choices.map(c => {
+    const b = el("button", "choice fx " + c.cls, c.label); b.type = "button"; box.appendChild(b);
+    b.addEventListener("click", () => run(async () => {
+      if (box.classList.contains("picked")) return;
+      box.classList.add("picked"); btns.forEach(x => { if (x !== b) x.classList.add("dim"); });
+      if (c.bloom) { const o = org(b); FX.bloom(o.x, o.y, 34); }
+      await wait(350);
+      await type(resp, c.res, 36);
+      await wait(600);
+      openNext(8);
+    }));
+    return b;
+  });
+  await wait(500);
+  await type(t, T.choiceTitle, 42);
+  await wait(300);
+  for (const b of btns) { b.classList.add("in"); await wait(260); }
+});
+
+/* ================================================================
+   PAGE 9 — BUNGA
+================================================================ */
+function flowerSVG(o) {
+  let outer = "", inner = "", fallers = "";
+  for (let i = 0; i < 8; i++) {
+    const wob = o.fake ? 0 : (i % 2 ? 3 : -2);
+    outer += `<ellipse cx="60" cy="50" rx="${o.fake ? 13 : 14}" ry="${o.fake ? 27 : 26}" transform="rotate(${i * 45 + wob} 60 78)" fill="${o.petal}"${o.fake ? ' stroke="rgba(255,255,255,.75)" stroke-width="1.2"' : ""}/>`;
+    inner += `<ellipse cx="60" cy="60" rx="9" ry="16" transform="rotate(${22.5 + i * 45} 60 78)" fill="${o.petal2}"/>`;
+  }
+  if (!o.fake) {
+    const f = [["-36px", "70deg", "0s"], ["30px", "-90deg", ".5s"], ["-10px", "140deg", "1s"], ["24px", "-40deg", "1.5s"]];
+    f.forEach((v, i) => { fallers += `<ellipse class="fp" cx="60" cy="52" rx="11" ry="20" transform="rotate(${i * 90 + 20} 60 78)" fill="${o.petal}" style="--fx:${v[0]};--fr:${v[1]};--fd:${v[2]}"/>`; });
+  }
+  const stem = o.fake
+    ? `<path d="M60 100 L60 268" stroke="${o.stem}" stroke-width="4" stroke-linecap="round" fill="none"/><path d="M60 196 L34 170 L58 186Z" fill="${o.leaf}"/><path d="M60 226 L88 200 L62 216Z" fill="${o.leaf}"/>`
+    : `<path d="M60 100 C56 150 66 205 60 268" stroke="${o.stem}" stroke-width="5" stroke-linecap="round" fill="none"/><path d="M60 190 C38 182 28 166 26 150 C46 154 58 168 60 190Z" fill="${o.leaf}"/><path d="M61 220 C82 212 94 196 96 180 C76 184 63 198 61 220Z" fill="${o.leaf}"/>`;
+  const ring = o.fake
+    ? `<circle cx="60" cy="78" r="13" fill="none" stroke="#e9c46a" stroke-width="2"/><circle cx="60" cy="78" r="9" fill="#f2cf7a"/><circle cx="57" cy="75" r="3" fill="#fff6d6" opacity=".8"/>
+       <path class="tw" d="M20 40 l2 6 6 2 -6 2 -2 6 -2 -6 -6 -2 6 -2z" fill="#ffe9a8"/><path class="tw" style="animation-delay:-1.2s" d="M98 56 l1.6 5 5 1.6 -5 1.6 -1.6 5 -1.6 -5 -5 -1.6 5 -1.6z" fill="#ffe9a8"/>`
+    : `<circle cx="60" cy="78" r="9" fill="${o.center}"/>`;
+  return `<svg viewBox="0 0 120 270" aria-hidden="true"><g class="whole"><g class="stemg">${stem}</g><g class="head">${outer}${inner}${ring}</g></g><g class="fallers">${fallers}</g></svg>`;
+}
+function buildGarden() {
+  const g = $("#garden"); g.innerHTML = ""; g.classList.remove("in");
+  const F = CONFIG.flowers.tags;
+  const list = [
+    { real: true, petal: "#e58aa3", petal2: "#f3b3c3", center: "#ffd57a", stem: "#6c8f5c", leaf: "#7ea36b", lean: "8deg", droop: "56deg" },
+    { fake: true, petal: "#fff6ee", petal2: "#ffe3ea", stem: "#7aa17a", leaf: "#8fb58b" },
+    { real: true, petal: "#f1a98f", petal2: "#f8cdb9", center: "#ffe08a", stem: "#6f9460", leaf: "#82a870", lean: "-7deg", droop: "-52deg" }
+  ];
+  list.forEach(o => {
+    const d = el("div", "fl " + (o.fake ? "fake" : "real"));
+    if (o.lean) { d.style.setProperty("--lean", o.lean); d.style.setProperty("--droop", o.droop); }
+    d.innerHTML = flowerSVG(o); d.appendChild(el("div", "ftag", o.fake ? F.fake : F.real)); g.appendChild(d);
+  });
+}
+enter[9] = () => run(async () => {
+  buildGarden(); syncNext(9); $("#tip9").classList.remove("off");
+  const g = $("#garden"), st = Stage($("#s9")), L = CONFIG.flowers.lines;
+  const real = $$(".fl.real .ftag", g), fake = $(".fl.fake .ftag", g);
+  st.reset();
+  await wait(600); g.classList.add("in"); await wait(1500);
+  st.line(L.a); await wait(2500); await st.clear();
+  st.line(L.b); real.forEach(t => t.classList.add("in")); await wait(2400); await st.clear();
+  st.line(L.c); fake.classList.add("in"); await wait(2400); await st.clear();
+  st.line(L.d); await wait(2200); await st.clear();
+  st.line(L.quote, "quote"); await wait(4200);
+  g.classList.add("wilt"); await wait(5200);
+  await st.clear();
+  $(".fl.fake", g).classList.add("lit");
+  st.line(L.e); await wait(2300);
+  st.line(L.f); await wait(2900); await st.clear();
+  st.line(L.g); await wait(3800);
+  st.line(CONFIG.signature, "sign"); await wait(2200);
+  $("#tip9").classList.add("off");
+  openNext(9);
+});
+
+/* ================================================================
+   PAGE 10 — FINAL
+================================================================ */
+const F = CONFIG.final;
+$("#yesBtn").textContent = F.yes; $("#noBtn").textContent = F.no; $("#retryBtn").textContent = F.retry;
+async function askQuestion(st, first) {
+  st.line(F.question, "ask"); await wait(first ? 1300 : 800);
+  $("#fBtns").classList.remove("hidden");
+}
+enter[10] = () => run(async () => {
+  const st = Stage($("#s10")); st.reset();
+  ["#fBtns", "#retryBtn", "#againBtn"].forEach(s => $(s).classList.add("hidden")); $("#tip10").classList.remove("off");
+  await wait(900);
+  for (const grp of F.groups) {
+    for (const l of grp) { st.line(l.t, l.cls || ""); await wait(l.hold || 1600); }
+    await wait(500); await st.clear(); await wait(500);
+  }
+  await askQuestion(st, true);
+  $("#tip10").classList.add("off");
+});
+$("#yesBtn").addEventListener("click", e => run(async () => {
+  const st = Stage($("#s10")), o = org(e.currentTarget);
+  $("#fBtns").classList.add("hidden"); $("#tip10").classList.add("off");
+  FX.bloom(o.x, o.y, 40);
+  await st.clear();
+  st.line(F.yesRes, "big2");
+  await wait(600); FX.bloom(innerWidth * .3, innerHeight * .5, 26); FX.bloom(innerWidth * .7, innerHeight * .5, 26);
+  await wait(1900);
+  st.line(F.thanks, "hand2");
+  await wait(1500);
+  $("#againBtn").classList.remove("hidden");
+}));
+$("#noBtn").addEventListener("click", () => run(async () => {
+  const st = Stage($("#s10"));
+  $("#fBtns").classList.add("hidden"); $("#tip10").classList.add("off");
+  await st.clear();
+  st.line(F.noRes, "em");
+  await wait(2600);
+  $("#retryBtn").classList.remove("hidden"); $("#againBtn").classList.remove("hidden");
+}));
+$("#retryBtn").addEventListener("click", () => run(async () => {
+  const st = Stage($("#s10"));
+  $("#retryBtn").classList.add("hidden"); $("#againBtn").classList.add("hidden");
+  await st.clear(); await wait(300);
+  await askQuestion(st, false);
+}));
+$("#againBtn").addEventListener("click", e => { done.clear(); flipped.clear(); go(0, org(e.currentTarget)); });
+
+/* ================================================================
+   GLOBAL: next/back, ripple, haptics, tap-to-skip, parallax
+================================================================ */
+$$("[data-next]").forEach(b => b.addEventListener("click", () => go(cur + 1, org(b))));
+$("#back").addEventListener("click", () => go(cur - 1));
+
+document.addEventListener("pointerdown", e => {
+  const b = e.target.closest(".btn,.opt,.choice,.cbtn,.pill,.icon-btn");
+  if (!b) return;
+  buzz(8);
+  if (b.matches(".btn,.opt,.choice,.cbtn,.pill")) {
+    const r = b.getBoundingClientRect(), s = Math.max(r.width, r.height), d = el("span", "ripple");
+    d.style.cssText = `width:${s}px;height:${s}px;left:${e.clientX - r.left - s / 2}px;top:${e.clientY - r.top - s / 2}px`;
+    b.appendChild(d); setTimeout(() => d.remove(), 700);
+  }
+}, { passive: true });
+
+$("#app").addEventListener("click", e => {
+  if (!e.target.closest(".skippable")) return;
+  if (e.target.closest("button,a,[role=button]")) return;
+  if (skipFn) skipFn();
+});
+
+let px = 0, py = 0, ticking = false;
+addEventListener("pointermove", e => {
+  px = e.clientX / innerWidth - .5; py = e.clientY / innerHeight - .5;
+  if (ticking) return; ticking = true;
+  requestAnimationFrame(() => {
+    ticking = false;
+    $$(".page.active .px").forEach(n => { const d = +n.dataset.d || 10; n.style.translate = `${(-px * d).toFixed(1)}px ${(-py * d).toFixed(1)}px`; });
+  });
+}, { passive: true });
+
+/* ================================================================
+   INIT
+================================================================ */
+function buildDecor() {
+  Object.entries(DECOR).forEach(([i, items]) => {
+    items.forEach((d, k) => {
+      const [sym, color, x, y, size, depth, rot] = d, vb = sym === "fl" ? 40 : 24;
+      const s = el("span", "decor px"); s.dataset.d = depth;
+      s.style.cssText = `left:${x}%;top:${y}%;width:${size}px;color:${color};rotate:${rot}deg`;
+      s.innerHTML = `<svg viewBox="0 0 ${vb} ${vb}" style="animation-delay:${-k * 1.3}s"><use href="#${sym}"/></svg>`;
+      pages[i].insertBefore(s, pages[i].firstChild);
+    });
+  });
+}
+
+function preload() {
+  const imgs = CONFIG.photos.map(p => new Promise(r => { const i = new Image(); i.onload = i.onerror = () => r(); i.src = p.src; }));
+  const fonts = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+  const cap = new Promise(r => setTimeout(r, 2800));
+  return Promise.race([Promise.all([...imgs, fonts]), cap]);
+}
+
+function init() {
+  document.title = CONFIG.pageTitle;
+  Object.entries(CONFIG.colors).forEach(([k, v]) => document.documentElement.style.setProperty("--" + k, v));
+  $$("[data-t]").forEach(n => { const v = T[n.dataset.t]; if (v !== undefined) n.textContent = v; });
+  const pr = $("#progress"); for (let i = 0; i < N; i++) pr.appendChild(el("i"));
+  buildDecor(); FX.init(); Music.init();
+  document.body.style.color = CONFIG.pages[0].ink;
+  const minWait = new Promise(r => setTimeout(r, 1700));
+  Promise.all([preload(), minWait]).then(() => {
+    $("#loader").classList.add("hide");
+    setTimeout(() => go(0), 350);
+  });
+}
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
+})();
+</script>
+</body>
+</html>
